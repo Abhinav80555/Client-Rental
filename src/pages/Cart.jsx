@@ -1,15 +1,17 @@
 import React from "react";
 import { Add, Remove } from "@material-ui/icons";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { mobile } from "../responsive";
+import { useSelector } from "react-redux";
 import StripeCheckout from "react-stripe-checkout";
 import { useEffect, useState } from "react";
 import { userRequest } from "../requestMethods";
 import { useNavigate } from "react-router-dom";
+
+const KEY = "pk_test_51LCG0gSFmd6Rsl6r0fQpoFvHlcExuOAWUDfOIgupF5D88nXZjJUkF10aarfKKUuTIkQ5iVc4k0v6IVYNr7phSoxh00NloShIy5"
 
 const Container = styled.div``;
 
@@ -163,7 +165,7 @@ const Cart = () => {
   const [stripeToken, setStripeToken] = useState(null);
   const history = useNavigate();
 
-  const onToken = (token) => {
+ const onToken = (token) => {
     setStripeToken(token);
   };
 
@@ -176,15 +178,16 @@ const Cart = () => {
         });
         history.push("/success", {
           stripeData: res.data,
-          products: cart,
-        });
-      } catch { }
+          products: cart, });
+      } catch {}
     };
     stripeToken && makeRequest();
   }, [stripeToken, cart.total, history]);
+
+  
   return (
     <Container>
-      <Navbar />
+      <Navbar /><br />
       <Announcement />
       <Wrapper>
         <Title>YOUR BAG</Title>
@@ -255,7 +258,7 @@ const Cart = () => {
               description={`Your total is $${cart.total}`}
               amount={cart.total * 100}
               token={onToken}
-              stripeKey={process.env.REACT_APP_STRIPE}
+              stripeKey={KEY}
             >
               <Button>CHECKOUT NOW</Button>
             </StripeCheckout>
@@ -266,6 +269,5 @@ const Cart = () => {
     </Container>
   );
 };
-
 
 export default Cart;
