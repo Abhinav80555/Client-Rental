@@ -1,4 +1,5 @@
 import React from "react";
+import './product.css';
 import { Add, Remove } from "@material-ui/icons";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
@@ -11,6 +12,10 @@ import { useEffect, useState } from "react";
 import { publicRequest } from "../requestMethods";
 import { addProduct } from "../redux/cartRedux";
 import { useDispatch } from "react-redux";
+import {DateRange} from "react-date-range";
+import {format} from "date-fns"
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
 
 const Container = styled.div``;
 
@@ -128,7 +133,14 @@ const Product = () => {
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const dispatch = useDispatch();
-
+  const [openDate,setOpenDate]= useState(false)
+const [date,setDate]= useState([{
+  startDate:new Date(),
+  endDate: new Date(),
+  key:'selection'
+  
+}]);
+  
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -180,6 +192,20 @@ const Product = () => {
               </FilterSize>
             </Filter>
           </FilterContainer>
+
+
+     <Title>Date</Title>     
+<div className="headerSearchItem">
+              <span onClick={()=>setOpenDate(!openDate)} className="headerSearchText">{`${format(date[0].startDate,"dd/MM/yyyy")} to ${format(date[0].endDate,"dd/MM/yyyy")}`}</span>
+                 {openDate && <DateRange editableDateInputs={true}
+                   onChange={item=>setDate([item.selection])}
+                   moveRangeOnFirstSelection={false}
+                   ranges={date}
+                   className="date"/>}
+              </div>
+
+          
+          
           <AddContainer>
             <AmountContainer>
               <Remove onClick={() => handleQuantity("dec")} />
@@ -195,5 +221,7 @@ const Product = () => {
     </Container>
   );
 };
+
+
 
 export default Product;
