@@ -1,5 +1,4 @@
 import React from "react";
-import './product.css';
 import { Add, Remove } from "@material-ui/icons";
 import styled from "styled-components";
 import Announcement from "../components/Announcement";
@@ -12,10 +11,10 @@ import { useEffect, useState } from "react";
 import { publicRequest } from "../requestMethods";
 import { addProduct } from "../redux/cartRedux";
 import { useDispatch } from "react-redux";
-import {DateRange} from "react-date-range";
-import {format} from "date-fns"
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
+import moment from "moment";
+import "antd/dist/antd.css";
+import { DatePicker, Space } from "antd";
+const { RangePicker } = DatePicker;
 
 const Container = styled.div``;
 
@@ -133,20 +132,17 @@ const Product = () => {
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const dispatch = useDispatch();
-  const [openDate,setOpenDate]= useState(false)
-const [date,setDate]= useState([{
-  startDate:new Date(),
-  endDate: new Date(),
-  key:'selection'
-  
-}]);
-  
+  const [from, setFrom] = useState();
+  const [to, setTo] = useState();
+    const [totalHours, setTotalHours] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+
   useEffect(() => {
     const getProduct = async () => {
       try {
         const res = await publicRequest.get("/products/find/" + id);
         setProduct(res.data);
-      } catch {}
+      } catch { }
     };
     getProduct();
   }, [id]);
@@ -159,14 +155,34 @@ const [date,setDate]= useState([{
     }
   };
 
+  useEffect(()=>{
+  setTotalAmount((totalHours* product.price))
+},[totalHours])
+  
+
+
+  function selectTimeSlots(values) {
+
+    setFrom(moment(values[0]).format("DD-MM-YY HH:mm"));
+    setTo(moment(values[1]).format("DD-MM-YY HH:mm"));
+
+    setTotalHours(values[1].diff(values[0],"hours"))
+  }
+
+
+
   const handleClick = () => {
+const reqObj={
+  totalHours,totalAmount,bookedTimeSlots:{from,to}
+}
+                                  
     dispatch(
-      addProduct({ ...product, quantity, color, size })
+      addProduct({ ...product, quantity, color, size, reqObj})
     );
   };
   return (
     <Container>
-      <Navbar /><br/>
+      <Navbar /><br />
       <Announcement />
       <Wrapper>
         <ImgContainer>
@@ -179,14 +195,14 @@ const [date,setDate]= useState([{
           <FilterContainer>
             <Filter>
               <FilterTitle>Color</FilterTitle>
-              {product.color?.map((c) => (
+              {product.color ?.map((c) => (
                 <FilterColor color={c} key={c} onClick={() => setColor(c)} />
               ))}
             </Filter>
             <Filter>
               <FilterTitle>Size</FilterTitle>
               <FilterSize onChange={(e) => setSize(e.target.value)}>
-                {product.size?.map((s) => (
+                {product.size ?.map((s) => (
                   <FilterSizeOption key={s}>{s}</FilterSizeOption>
                 ))}
               </FilterSize>
@@ -194,18 +210,17 @@ const [date,setDate]= useState([{
           </FilterContainer>
 
 
-     <Title>Date</Title>     
-<div className="headerSearchItem">
-              <span onClick={()=>setOpenDate(!openDate)} className="headerSearchText">{`${format(date[0].startDate,"dd/MM/yyyy")} to ${format(date[0].endDate,"dd/MM/yyyy")}`}</span>
-                 {openDate && <DateRange editableDateInputs={true}
-                   onChange={item=>setDate([item.selection])}
-                   moveRangeOnFirstSelection={false}
-                   ranges={date}
-                   className="date"/>}
-              </div>
+          <RangePicker showTime={{
+            format: 'HH:mm',
+          }}
+            format="DD-MM-YY HH:mm" onChange={selectTimeSlots} />
+<h1>{totalHours}</h1>
+      <h1>{totalAmount}</h1>    
+          
 
-          
-          
+
+
+
           <AddContainer>
             <AmountContainer>
               <Remove onClick={() => handleQuantity("dec")} />
@@ -221,7 +236,5 @@ const [date,setDate]= useState([{
     </Container>
   );
 };
-
-
 
 export default Product;
